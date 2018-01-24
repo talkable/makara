@@ -120,10 +120,10 @@ module Makara
       end
     RUBY_EVAL
 
-    def graceful_connection_for(config)
-      fake_wrapper = Makara::ConnectionWrapper.new(self, nil, config)
+    def graceful_connection_for(config, role)
+      fake_wrapper = Makara::ConnectionWrapper.new(self, nil, config.merge)
 
-      @error_handler.handle(fake_wrapper) do
+      @error_handler.handle(fake_wrapper, role) do
         connection_for(config)
       end
     rescue Makara::Errors::BlacklistConnection => e
@@ -276,14 +276,14 @@ module Makara
       @master_pool = Makara::Pool.new('master', self)
       @config_parser.master_configs.each do |master_config|
         @master_pool.add master_config do
-          graceful_connection_for(master_config)
+          graceful_connection_for(master_config, :master)
         end
       end
 
       @slave_pool = Makara::Pool.new('slave', self)
       @config_parser.slave_configs.each do |slave_config|
         @slave_pool.add slave_config do
-          graceful_connection_for(slave_config)
+          graceful_connection_for(slave_config, :slave)
         end
       end
     end

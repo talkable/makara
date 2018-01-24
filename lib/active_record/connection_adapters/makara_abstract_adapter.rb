@@ -32,7 +32,7 @@ module ActiveRecord
         ].map(&:freeze).freeze
 
 
-        def handle(connection)
+        def handle(connection, role)
 
           yield
 
@@ -42,7 +42,7 @@ module ActiveRecord
           when *harsh_errors
             harshly(e)
           else
-            if connection_message?(e) || custom_error_message?(connection, e)
+            if role == :slave && (connection_message?(e) || custom_error_message?(connection, e))
               gracefully(connection, e)
             else
               harshly(e)
